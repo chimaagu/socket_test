@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_test/messaging_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,44 +32,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  IO.Socket? socket;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  void initState() {
-    connectSocket();
-    super.initState();
-  }
-
-  void connectSocket() {
-    socket = IO.io(
-      "https://cafiabackend.herokuapp.com/",
-      <String, dynamic>{
-        'transports': ['websocket'],
-        "autoConnect": false,
-        "forceNew": true,
-      },
-    );
-    socket!.connect();
-    socket!.emit("chat-message", "Chima");
-    socket!.on("chat-message", (data) {
-      print(data.toString());
-    });
-    socket!.onConnect(
-      (data) {
-        print("connected");
-      },
-    );
-    print(socket!.connected);
-  }
-
   TextEditingController controller = TextEditingController();
+
+  List users = [
+    {
+      "name": "user1",
+      "id": "1",
+    },
+    {
+      "name": "user2",
+      "id": "2",
+    },
+    {
+      "name": "user3",
+      "id": "3",
+    },
+    {
+      "name": "user4",
+      "id": "4",
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -77,41 +60,23 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            // Expanded(
-            //   child: ListView.builder(
-            //     itemCount: 2,
-            //     itemBuilder: (context, index) {
-            //       return Text("data");
-            //     },
-            //   ),
-            // ),
-            TextField(
-              controller: controller,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          onSendMessagePressed();
+      body: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MessageView(id: controller.text),
+                ),
+              );
+            },
+            title: Text(users[index]["name"]),
+            subtitle: Text(users[index]["id"]),
+          );
         },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
-  }
-
-  void sendMessage(String message) {
-    socket!.emit('message', {'text': message});
-    socket!.on("message", (data) => print("mess"));
-  }
-
-  void onSendMessagePressed() {
-    String message = controller.text;
-    sendMessage(message);
-    print(message);
   }
 }
